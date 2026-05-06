@@ -1,0 +1,211 @@
+import jwt from "jsonwebtoken";
+import request from "supertest";
+
+jest.mock("@/shared/clients/backend.client", () => ({
+  backendClient: { request: jest.fn() },
+}));
+
+jest.mock("@/shared/clients/ai.client", () => ({
+  aiClient: null,
+}));
+
+import { aplicacao } from "@/config/app";
+import { backendClient } from "@/shared/clients/backend.client";
+
+const SEGREDO = process.env.JWT_SECRET_KEY ?? "test-secret";
+
+const tokenValido = () =>
+  jwt.sign({ sub: "u1", perfil: "ALUNO", status: "ATIVO" }, SEGREDO, { expiresIn: "5m" });
+
+const backendMock = backendClient as unknown as { request: jest.Mock };
+
+beforeEach(() => {
+  backendMock.request.mockReset();
+});
+
+describe("GET /health", () => {
+  it("retorna 200 com status ok", async () => {
+    const resposta = await request(aplicacao).get("/health");
+    expect(resposta.status).toBe(200);
+    expect(resposta.body.dados.status).toBe("ok");
+  });
+});
+
+describe("rota desconhecida", () => {
+  it("retorna 404 padronizado", async () => {
+    const resposta = await request(aplicacao).get("/nao-existe");
+    expect(resposta.status).toBe(404);
+    expect(resposta.body.erro.codigo).toBe("NAO_ENCONTRADO");
+  });
+});
+
+describe("/api/v1/autenticacao - rotas publicas (sem JWT)", () => {
+  it("repassa POST /login para o Backend", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: { accessToken: "x" } },
+      headers: { "content-type": "application/json" },
+    });
+
+    const resposta = await request(aplicacao)
+      .post("/api/v1/autenticacao/login")
+      .send({ email: "a@b.com", senha: "x" });
+
+    expect(resposta.status).toBe(200);
+    expect(backendMock.request).toHaveBeenCalledTimes(1);
+    const args = backendMock.request.mock.calls[0][0];
+    expect(args.method).toBe("POST");
+    expect(args.url).toBe("/api/v1/autenticacao/login");
+    expect(args.headers["x-internal-token"]).toBeDefined();
+  });
+
+  it("repassa GET /alunos/localidades/estados sem JWT", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: [] },
+      headers: {},
+    });
+    const resposta = await request(aplicacao).get(
+      "/api/v1/autenticacao/alunos/localidades/estados",
+    );
+    expect(resposta.status).toBe(200);
+  });
+
+  it("repassa POST /recuperar-senha sem JWT", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: null },
+      headers: {},
+    });
+
+    const resposta = await request(aplicacao)
+      .post("/api/v1/autenticacao/recuperar-senha")
+      .send({ email: "a@b.com" });
+
+    expect(resposta.status).toBe(200);
+    expect(backendMock.request.mock.calls[0][0].url).toBe(
+      "/api/v1/autenticacao/recuperar-senha",
+    );
+  });
+});
+
+describe("/api/v1/autenticacao - sessoes", () => {
+  it("repassa POST /login sem JWT", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: { accessToken: "x" } },
+      headers: {},
+    });
+
+    const resposta = await request(aplicacao)
+      .post("/api/v1/autenticacao/login")
+      .send({ email: "a@b.com", senha: "x" });
+
+    expect(resposta.status).toBe(200);
+    const args = backendMock.request.mock.calls[0][0];
+    expect(args.url).toBe("/api/v1/autenticacao/login");
+    expect(args.headers["x-internal-token"]).toBeDefined();
+  });
+
+  it("repassa POST /atualizar-token sem JWT", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: { accessToken: "x", refreshToken: "y" } },
+      headers: {},
+    });
+
+    const resposta = await request(aplicacao)
+      .post("/api/v1/autenticacao/atualizar-token")
+      .send({ refreshToken: "refresh-token" });
+
+    expect(resposta.status).toBe(200);
+    expect(backendMock.request.mock.calls[0][0].url).toBe(
+      "/api/v1/autenticacao/atualizar-token",
+    );
+  });
+});
+
+describe("/api/v1/autenticacao - rotas autenticadas", () => {
+  it("rejeita /usuario-atual sem token", async () => {
+    const resposta = await request(aplicacao).get("/api/v1/autenticacao/usuario-atual");
+    expect(resposta.status).toBe(401);
+    expect(backendMock.request).not.toHaveBeenCalled();
+  });
+
+  it("repassa /usuario-atual com token valido injetando X-User-*", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: { id: "u1" } },
+      headers: {},
+    });
+
+    const resposta = await request(aplicacao)
+      .get("/api/v1/autenticacao/usuario-atual")
+      .set("Authorization", `Bearer ${tokenValido()}`);
+
+    expect(resposta.status).toBe(200);
+    const args = backendMock.request.mock.calls[0][0];
+    expect(args.headers["x-user-id"]).toBe("u1");
+    expect(args.headers["x-user-profile"]).toBe("ALUNO");
+    expect(args.headers["x-user-status"]).toBe("ATIVO");
+  });
+});
+
+describe("/api/v1/admin", () => {
+  it("rejeita sem token", async () => {
+    const resposta = await request(aplicacao).get("/api/v1/admin/usuarios");
+    expect(resposta.status).toBe(401);
+  });
+
+  it("repassa com token", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: [] },
+      headers: {},
+    });
+    const resposta = await request(aplicacao)
+      .get("/api/v1/admin/usuarios")
+      .set("Authorization", `Bearer ${tokenValido()}`);
+    expect(resposta.status).toBe(200);
+  });
+});
+
+describe("/api/v1/exemplos", () => {
+  it("repassa POST autenticado", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 201,
+      data: { mensagem: "criado", dados: { id: "e1" } },
+      headers: {},
+    });
+    const resposta = await request(aplicacao)
+      .post("/api/v1/exemplos")
+      .set("Authorization", `Bearer ${tokenValido()}`)
+      .send({ nome: "x" });
+    expect(resposta.status).toBe(201);
+  });
+});
+
+describe("/api/v1/ia - placeholder", () => {
+  it("retorna 503 IA_INDISPONIVEL", async () => {
+    const resposta = await request(aplicacao)
+      .get("/api/v1/ia/qualquer-coisa")
+      .set("Authorization", `Bearer ${tokenValido()}`);
+    expect(resposta.status).toBe(503);
+    expect(resposta.body.erro.codigo).toBe("IA_INDISPONIVEL");
+  });
+});
+
+describe("erro do downstream", () => {
+  it("retorna 502 quando backend rejeita conexao", async () => {
+    const erro = new Error("connect ECONNREFUSED") as Error & { code?: string; isAxiosError?: boolean };
+    erro.code = "ECONNREFUSED";
+    erro.isAxiosError = true;
+    Object.setPrototypeOf(erro, (await import("axios")).AxiosError.prototype);
+    backendMock.request.mockRejectedValue(erro);
+
+    const resposta = await request(aplicacao)
+      .post("/api/v1/autenticacao/login")
+      .send({ email: "a@b.com" });
+    expect(resposta.status).toBe(502);
+  });
+});

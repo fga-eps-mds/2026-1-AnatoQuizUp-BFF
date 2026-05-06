@@ -1,0 +1,70 @@
+name: CI - BFF
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  ci:
+    name: Lint, Build, Test e SonarCloud
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: test
+      INTERNAL_TOKEN: ci-internal-token
+      JWT_SECRET_KEY: ci-test-secret
+      BACKEND_URL: http://localhost:3333
+      AI_URL: ""
+      CORS_ORIGINS: http://localhost:5173
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Rodar ESLint
+        run: npm run lint
+
+      - name: Build do projeto
+        run: npm run build
+
+      - name: Rodar testes com cobertura
+        run: npm test -- --coverage --passWithNoTests
+
+      - name: Verificar cobertura minima (85%)
+        run: |
+          if [ ! -f coverage/coverage-summary.json ]; then
+            echo "::warning::coverage-summary.json nao encontrado."
+            exit 0
+          fi
+          COVERAGE=$(node -p "Math.round(require('./coverage/coverage-summary.json').total.lines.pct)")
+          echo "Cobertura de linhas: $COVERAGE%"
+          if [ "$COVERAGE" -lt 85 ]; then
+            echo "::error::Cobertura ($COVERAGE%) abaixo do minimo de 85%."
+            exit 1
+          fi
+          echo "::notice::Cobertura ok: $COVERAGE%"
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Aguardar SonarCloud Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
