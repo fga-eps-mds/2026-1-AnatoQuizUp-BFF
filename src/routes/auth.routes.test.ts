@@ -7,6 +7,7 @@ jest.mock("@/shared/clients/backend.client", () => ({
 }));
 
 import { aplicacao } from "@/config/app";
+import { env } from "@/config/env";
 import { backendClient } from "@/shared/clients/backend.client";
 
 const backendRequestMock = backendClient.request as jest.Mock;
@@ -44,7 +45,7 @@ describe("authRouter", () => {
         method: "POST",
         url: "/api/v1/autenticacao/cadastro/professor",
         headers: expect.objectContaining({
-          "x-internal-token": "test-internal-token",
+          "x-internal-token": env.INTERNAL_TOKEN,
         }),
       }),
     );
