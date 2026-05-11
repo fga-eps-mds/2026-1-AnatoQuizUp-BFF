@@ -9,6 +9,7 @@ const HEADERS_RESERVADOS = new Set([
   "trailer",
   "upgrade",
   "accept-encoding",
+  "origin",
   "x-internal-token",
   "x-user-id",
   "x-user-profile",
