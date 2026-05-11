@@ -51,6 +51,34 @@ describe("authRouter", () => {
     );
   });
 
+  test("encaminha consulta publica de email sem repassar Origin ao Backend", async () => {
+    backendRequestMock.mockResolvedValueOnce({
+      status: 200,
+      headers: { "content-type": "application/json" },
+      data: {
+        mensagem: "Email disponivel.",
+        dados: { email: "miguelmsoliveira@gmail.com", disponivel: true },
+      },
+    });
+
+    const resposta = await request(aplicacao)
+      .get("/api/v1/autenticacao/alunos/email-disponivel")
+      .query({ email: "miguelmsoliveira@gmail.com" })
+      .set("Origin", "http://localhost:5173");
+
+    expect(resposta.status).toBe(200);
+    expect(backendRequestMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: "GET",
+        url: expect.stringContaining("/api/v1/autenticacao/alunos/email-disponivel"),
+        headers: expect.objectContaining({
+          "x-internal-token": env.INTERNAL_TOKEN,
+        }),
+      }),
+    );
+    expect(backendRequestMock.mock.calls[0][0].headers).not.toHaveProperty("origin");
+  });
+
   test("mantem rota autenticada protegida sem Authorization", async () => {
     const resposta = await request(aplicacao).get("/api/v1/autenticacao/usuario-atual");
 
