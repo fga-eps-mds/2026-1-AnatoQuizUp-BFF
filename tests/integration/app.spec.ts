@@ -185,6 +185,34 @@ describe("/api/v1/exemplos", () => {
   });
 });
 
+describe("/api/v1/questoes", () => {
+  it("rejeita sem token", async () => {
+    const resposta = await request(aplicacao).get("/api/v1/questoes");
+
+    expect(resposta.status).toBe(401);
+    expect(backendMock.request).not.toHaveBeenCalled();
+  });
+
+  it("repassa chamadas autenticadas para o Backend", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 200,
+      data: { dados: [], metadados: { page: 1, limit: 10, total: 0, totalPages: 0 } },
+      headers: {},
+    });
+
+    const resposta = await request(aplicacao)
+      .get("/api/v1/questoes")
+      .set("Authorization", `Bearer ${tokenValido()}`);
+
+    expect(resposta.status).toBe(200);
+    const args = backendMock.request.mock.calls[0][0];
+    expect(args.method).toBe("GET");
+    expect(args.url).toBe("/api/v1/questoes");
+    expect(args.headers["x-internal-token"]).toBeDefined();
+    expect(args.headers["x-user-id"]).toBe("u1");
+  });
+});
+
 describe("/api/v1/ia - placeholder", () => {
   it("retorna 503 IA_INDISPONIVEL", async () => {
     const resposta = await request(aplicacao)
