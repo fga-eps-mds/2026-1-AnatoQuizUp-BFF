@@ -12,6 +12,7 @@ describe("utils/headers - filtrarHeadersDeRepasse", () => {
       "transfer-encoding": "chunked",
       connection: "keep-alive",
       "accept-encoding": "gzip",
+      origin: "https://front.example.com",
       "x-internal-token": "token-cliente",
       "x-user-id": "usuario-forjado",
       authorization: "Bearer token",
