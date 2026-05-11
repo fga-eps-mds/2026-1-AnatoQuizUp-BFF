@@ -1,13 +1,13 @@
 import request from "supertest";
 
-import { aplicacao } from "@/config/app";
-import { backendClient } from "@/shared/clients/backend.client";
-
 jest.mock("@/shared/clients/backend.client", () => ({
   backendClient: {
     request: jest.fn(),
   },
 }));
+
+import { aplicacao } from "@/config/app";
+import { backendClient } from "@/shared/clients/backend.client";
 
 const backendRequestMock = backendClient.request as jest.Mock;
 
@@ -34,8 +34,8 @@ describe("authRouter", () => {
         instituicao: "UnB",
         departamento: "Anatomia",
         curso: "Medicina",
-        senha: "password123",
-        confirmacaoSenha: "password123",
+        senha: "senhaValida123",
+        confirmacaoSenha: "senhaValida123",
       });
 
     expect(resposta.status).toBe(201);
