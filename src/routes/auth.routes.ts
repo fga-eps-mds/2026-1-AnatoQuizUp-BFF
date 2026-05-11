@@ -8,6 +8,7 @@ const ROTAS_PUBLICAS = [
   "/login",
   "/atualizar-token",
   "/cadastro",
+  "/cadastro/professor",
   "/recuperar-senha",
   "/redefinir-senha",
   "/alunos/nickname-disponivel",
