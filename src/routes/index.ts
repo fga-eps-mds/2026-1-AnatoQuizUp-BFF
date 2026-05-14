@@ -11,7 +11,7 @@ const apiRouter = Router();
 apiRouter.use("/autenticacao", authRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/exemplos", exemplosRouter);
-apiRouter.use("/ia", iaRouter);
 apiRouter.use("/questoes", questoesRouter);
+apiRouter.use("/ia", iaRouter);
 
 export { apiRouter };
