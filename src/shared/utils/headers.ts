@@ -12,7 +12,7 @@ const HEADERS_RESERVADOS = new Set([
   "origin",
   "x-internal-token",
   "x-user-id",
-  "x-user-profile",
+  "x-user-papel",
   "x-user-status",
 ]);
 

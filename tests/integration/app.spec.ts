@@ -15,7 +15,7 @@ import { backendClient } from "@/shared/clients/backend.client";
 const SEGREDO = process.env.JWT_SECRET_KEY ?? "test-secret";
 
 const tokenValido = () =>
-  jwt.sign({ sub: "u1", perfil: "ALUNO", status: "ATIVO" }, SEGREDO, { expiresIn: "5m" });
+  jwt.sign({ sub: "u1", papel: "ALUNO", status: "ATIVO" }, SEGREDO, { expiresIn: "5m" });
 
 const backendMock = backendClient as unknown as { request: jest.Mock };
 
@@ -146,7 +146,7 @@ describe("/api/v1/autenticacao - rotas autenticadas", () => {
     expect(resposta.status).toBe(200);
     const args = backendMock.request.mock.calls[0][0];
     expect(args.headers["x-user-id"]).toBe("u1");
-    expect(args.headers["x-user-profile"]).toBe("ALUNO");
+    expect(args.headers["x-user-papel"]).toBe("ALUNO");
     expect(args.headers["x-user-status"]).toBe("ATIVO");
   });
 });

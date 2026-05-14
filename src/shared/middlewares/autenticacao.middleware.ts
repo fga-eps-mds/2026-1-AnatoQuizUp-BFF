@@ -9,7 +9,7 @@ import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 type PayloadJwt = {
   sub?: string;
   id?: string;
-  perfil?: string;
+  papel?: string;
   status?: string;
   iat?: number;
   exp?: number;
@@ -38,7 +38,7 @@ export function middlewareAutenticacao(
     const payload = jwt.verify(token, env.JWT_SECRET_KEY) as PayloadJwt;
     request.usuario = {
       id: payload.sub ?? payload.id ?? "",
-      perfil: payload.perfil ?? "",
+      papel: payload.papel ?? "",
       status: payload.status ?? "",
     };
     next();

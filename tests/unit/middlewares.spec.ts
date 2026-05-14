@@ -52,7 +52,7 @@ describe("middlewareAutenticacao", () => {
 
   it("aceita token valido e popula request.usuario", () => {
     const token = jwt.sign(
-      { sub: "user-123", perfil: "ALUNO", status: "ATIVO" },
+      { sub: "user-123", papel: "ALUNO", status: "ATIVO" },
       SEGREDO,
       { expiresIn: "5m" },
     );
@@ -62,7 +62,7 @@ describe("middlewareAutenticacao", () => {
     expect(next).toHaveBeenCalledWith();
     expect((request as Request).usuario).toEqual({
       id: "user-123",
-      perfil: "ALUNO",
+      papel: "ALUNO",
       status: "ATIVO",
     });
   });
