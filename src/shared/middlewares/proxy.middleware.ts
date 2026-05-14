@@ -25,7 +25,7 @@ export function criarProxyHandler(client: AxiosInstance, opcoes: OpcoesProxy = {
 
       if (request.usuario) {
         headers["x-user-id"] = request.usuario.id;
-        headers["x-user-profile"] = request.usuario.perfil;
+        headers["x-user-papel"] = request.usuario.papel;
         headers["x-user-status"] = request.usuario.status;
       }
 

@@ -18,6 +18,7 @@ const envSchema = z.object({
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
   BACKEND_URL: obrigatoriaComDefaultDeTeste("BACKEND_URL", "http://localhost:3333"),
+  QUIZ_SERVICE_URL: obrigatoriaComDefaultDeTeste("QUIZ_SERVICE_URL", "http://localhost:3334"),
   AI_URL: z
     .string()
     .url()
