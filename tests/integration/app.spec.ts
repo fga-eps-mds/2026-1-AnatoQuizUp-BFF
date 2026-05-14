@@ -5,12 +5,17 @@ jest.mock("@/shared/clients/backend.client", () => ({
   backendClient: { request: jest.fn() },
 }));
 
+jest.mock("@/shared/clients/quiz.client", () => ({
+  quizClient: { request: jest.fn() },
+}));
+
 jest.mock("@/shared/clients/ai.client", () => ({
   aiClient: null,
 }));
 
 import { aplicacao } from "@/config/app";
 import { backendClient } from "@/shared/clients/backend.client";
+import { quizClient } from "@/shared/clients/quiz.client";
 
 const SEGREDO = process.env.JWT_SECRET_KEY ?? "test-secret";
 
@@ -18,9 +23,11 @@ const tokenValido = () =>
   jwt.sign({ sub: "u1", papel: "ALUNO", status: "ATIVO" }, SEGREDO, { expiresIn: "5m" });
 
 const backendMock = backendClient as unknown as { request: jest.Mock };
+const quizMock = quizClient as unknown as { request: jest.Mock };
 
 beforeEach(() => {
   backendMock.request.mockReset();
+  quizMock.request.mockReset();
 });
 
 describe("GET /health", () => {
@@ -182,6 +189,36 @@ describe("/api/v1/exemplos", () => {
       .set("Authorization", `Bearer ${tokenValido()}`)
       .send({ nome: "x" });
     expect(resposta.status).toBe(201);
+  });
+});
+
+describe("/api/v1/questoes", () => {
+  it("rejeita sem token", async () => {
+    const resposta = await request(aplicacao).get("/api/v1/questoes");
+
+    expect(resposta.status).toBe(401);
+    expect(backendMock.request).not.toHaveBeenCalled();
+    expect(quizMock.request).not.toHaveBeenCalled();
+  });
+
+  it("repassa chamadas autenticadas para o Quiz-Service", async () => {
+    quizMock.request.mockResolvedValue({
+      status: 200,
+      data: { dados: [], metadados: { page: 1, limit: 10, total: 0, totalPages: 0 } },
+      headers: {},
+    });
+
+    const resposta = await request(aplicacao)
+      .get("/api/v1/questoes")
+      .set("Authorization", `Bearer ${tokenValido()}`);
+
+    expect(resposta.status).toBe(200);
+    expect(backendMock.request).not.toHaveBeenCalled();
+    const args = quizMock.request.mock.calls[0][0];
+    expect(args.method).toBe("GET");
+    expect(args.url).toBe("/api/v1/questoes");
+    expect(args.headers["x-internal-token"]).toBeDefined();
+    expect(args.headers["x-user-id"]).toBe("u1");
   });
 });
 
