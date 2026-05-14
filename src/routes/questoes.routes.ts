@@ -112,6 +112,5 @@ router.put("/:id", upload.single("imagem"), async (req, res) => {
 });
 
 router.all(/.*/, criarProxyHandler(quizClient));
->>>>>>> main
 
 export { router as questoesRouter };
