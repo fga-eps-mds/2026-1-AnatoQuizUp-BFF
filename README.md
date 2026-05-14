@@ -1,12 +1,12 @@
 # AnatoQuizUp BFF
 
-**Backend-For-Frontend** do projeto **AnatoQuizUp**. É o **único endereço público** entre os serviços: o Frontend só fala com o BFF; o BFF roteia para o **Backend** ou para o **AI Service** conforme o caminho da URL.
+**Backend-For-Frontend** do projeto **AnatoQuizUp**. É o **único endereço público** entre os serviços: o Frontend só fala com o BFF; o BFF roteia para o **Backend/Auth**, **Quiz-Service** ou **AI Service** conforme o caminho da URL.
 
 É um **proxy 100% orquestração** — não tem regras de negócio, não tem persistência, não tem cache. Suas funções:
 
 - Validar o JWT (assinatura/expiração) antes de repassar.
-- Injetar `X-Internal-Token` (segredo compartilhado) e cabeçalhos auxiliares (`X-User-Id`, `X-User-Profile`, `X-User-Status`) nas chamadas downstream.
-- Rotear por path: `/api/v1/autenticacao/*`, `/api/v1/admin/*`, `/api/v1/exemplos/*` → Backend; `/api/v1/ia/*` → AI (placeholder enquanto AI estiver vazio).
+- Injetar `X-Internal-Token` (segredo compartilhado) e cabeçalhos auxiliares (`X-User-Id`, `X-User-Papel`, `X-User-Status`) nas chamadas downstream.
+- Rotear por path: `/api/v1/autenticacao/*`, `/api/v1/admin/*`, `/api/v1/exemplos/*` → Backend/Auth; `/api/v1/questoes/*` → Quiz-Service; `/api/v1/ia/*` → AI (placeholder enquanto AI estiver vazio).
 - Padronizar respostas de erro vindas do downstream.
 
 ## Stack
@@ -29,7 +29,8 @@
 | npm | que vem com o Node | — |
 | Git | qualquer recente | https://git-scm.com/ |
 | GNU Make | opcional, mas recomendado | Windows: `choco install make` ou `scoop install make`; Mac: `brew install make`; Linux: já vem |
-| Backend rodando em `localhost:3333` | — | siga o README do `2026-1-AnatoQuizUp-Backend` antes de subir o BFF |
+| Backend/Auth rodando em `localhost:3333` | — | siga o README do `2026-1-AnatoQuizUp-Backend` antes de subir o BFF |
+| Quiz-Service rodando em `localhost:3334` | — | necessário para fluxos de `/api/v1/questoes/*` |
 
 ## Setup local — passo a passo
 
@@ -54,10 +55,11 @@ PORT=4000
 LOG_LEVEL=info
 
 BACKEND_URL=http://localhost:3333
+QUIZ_SERVICE_URL=http://localhost:3334
 AI_URL=
 
-# !!! DEVE ser idêntico ao INTERNAL_TOKEN do Backend !!!
-INTERNAL_TOKEN=<mesmo-valor-que-está-no-.env-do-Backend>
+# !!! DEVE ser idêntico ao INTERNAL_TOKEN do Backend e do Quiz-Service !!!
+INTERNAL_TOKEN=<mesmo-valor-que-está-nos-.env-dos-serviços>
 
 # !!! DEVE ser idêntico ao JWT_SECRET_KEY do Backend !!!
 JWT_SECRET_KEY=<mesmo-valor-que-está-no-.env-do-Backend>
@@ -102,9 +104,10 @@ make clean       # apaga dist/ e coverage/
 | Prefixo público | Destino |
 |---|---|
 | `GET /health` | próprio BFF |
-| `/api/v1/autenticacao/*` | Backend `/api/v1/autenticacao/*` |
-| `/api/v1/admin/usuarios*` | Backend `/api/v1/admin/usuarios*` (autenticado) |
-| `/api/v1/exemplos/*` | Backend `/api/v1/exemplos/*` (autenticado) |
+| `/api/v1/autenticacao/*` | Backend/Auth `/api/v1/autenticacao/*` |
+| `/api/v1/admin/usuarios*` | Backend/Auth `/api/v1/admin/usuarios*` (autenticado) |
+| `/api/v1/exemplos/*` | Backend/Auth `/api/v1/exemplos/*` (autenticado) |
+| `/api/v1/questoes/*` | Quiz-Service `/api/v1/questoes/*` (autenticado) |
 | `/api/v1/ia/*` | AI `/api/v1/*` — atualmente **503 `IA_INDISPONIVEL`** enquanto `AI_URL` estiver vazio |
 
 ### Rotas públicas de autenticação (sem JWT)
@@ -120,11 +123,11 @@ Qualquer outro path de autenticação exige `Authorization: Bearer <accessToken>
 |---|---|---|
 | `X-Internal-Token` | sempre | `INTERNAL_TOKEN` do `.env` |
 | `X-User-Id` | rotas autenticadas | claim `sub` do JWT |
-| `X-User-Profile` | rotas autenticadas | claim `perfil` do JWT |
+| `X-User-Papel` | rotas autenticadas | claim `papel` do JWT |
 | `X-User-Status` | rotas autenticadas | claim `status` do JWT |
 | `Authorization` | sempre que recebido | preservado do request original |
 
-> Os headers `X-User-*` são **informativos** — o Backend continua revalidando o JWT contra o banco e não confia neles para decisões críticas.
+> Os headers `X-User-*` são **informativos**. Backend/Auth e Quiz-Service validam o JWT e não usam esses headers como fonte de verdade para decisões críticas.
 
 ## Estrutura
 
@@ -141,11 +144,13 @@ Qualquer outro path de autenticação exige `Authorization: Bearer <accessToken>
 │   │   ├── auth.routes.ts           # rotas públicas + autenticadas, repassa Backend
 │   │   ├── exemplos.routes.ts       # exige JWT, repassa Backend
 │   │   ├── ia.routes.ts             # exige JWT, repassa AI (ou 503 placeholder)
+│   │   ├── questoes.routes.ts       # exige JWT, repassa Quiz-Service
 │   │   └── index.ts                 # monta o apiRouter
 │   ├── shared/
 │   │   ├── clients/
 │   │   │   ├── ai.client.ts         # Axios para AI (null se AI_URL vazio)
-│   │   │   └── backend.client.ts    # Axios para Backend
+│   │   │   ├── backend.client.ts    # Axios para Backend/Auth
+│   │   │   └── quiz.client.ts       # Axios para Quiz-Service
 │   │   ├── constants/mensagens.ts
 │   │   ├── errors/
 │   │   ├── middlewares/
@@ -169,9 +174,10 @@ Qualquer outro path de autenticação exige `Authorization: Bearer <accessToken>
 | `NODE_ENV` | não | `development` | `development` \| `test` \| `production` |
 | `PORT` | não | `4000` | Porta de escuta |
 | `LOG_LEVEL` | não | `info` | Nível Pino |
-| `BACKEND_URL` | sim | `http://localhost:3333` | URL base do Backend (em prod, `http://${{Backend.RAILWAY_PRIVATE_DOMAIN}}:3333`) |
+| `BACKEND_URL` | sim | `http://localhost:3333` | URL base do Backend/Auth (em prod, `http://${{Backend.RAILWAY_PRIVATE_DOMAIN}}:3333`) |
+| `QUIZ_SERVICE_URL` | sim | `http://localhost:3334` | URL base do Quiz-Service (em prod, domínio privado do Railway) |
 | `AI_URL` | não | `""` | URL base do AI; vazio enquanto AI estiver placeholder |
-| `INTERNAL_TOKEN` | sim | — | Segredo compartilhado com Backend e AI |
+| `INTERNAL_TOKEN` | sim | — | Segredo compartilhado com Backend/Auth, Quiz-Service e AI |
 | `JWT_SECRET_KEY` | sim | — | Mesmo segredo do Backend (validação local de access token) |
 | `CORS_ORIGINS` | sim | — | Lista CSV de origens autorizadas |
 | `REQUEST_TIMEOUT_MS` | não | `15000` | Timeout das chamadas downstream |

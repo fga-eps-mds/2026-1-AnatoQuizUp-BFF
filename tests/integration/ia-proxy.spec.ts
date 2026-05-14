@@ -15,7 +15,7 @@ import { aiClient } from "@/shared/clients/ai.client";
 const SEGREDO = process.env.JWT_SECRET_KEY ?? "test-secret";
 
 const tokenValido = () =>
-  jwt.sign({ sub: "u1", perfil: "ALUNO", status: "ATIVO" }, SEGREDO, { expiresIn: "5m" });
+  jwt.sign({ sub: "u1", papel: "ALUNO", status: "ATIVO" }, SEGREDO, { expiresIn: "5m" });
 
 const aiMock = aiClient as unknown as { request: jest.Mock };
 

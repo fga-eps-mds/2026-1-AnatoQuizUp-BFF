@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import FormData from "form-data";
 
-import { backendClient } from "@/shared/clients/backend.client";
+import { quizClient } from "@/shared/clients/quiz.client";
 import { middlewareAutenticacao } from "@/shared/middlewares/autenticacao.middleware";
 import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
 
@@ -111,6 +111,7 @@ router.put("/:id", upload.single("imagem"), async (req, res) => {
   }
 });
 
-router.all(/.*/, criarProxyHandler(backendClient));
+router.all(/.*/, criarProxyHandler(quizClient));
+>>>>>>> main
 
 export { router as questoesRouter };
