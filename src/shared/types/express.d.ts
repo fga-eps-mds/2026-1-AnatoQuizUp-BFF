@@ -3,7 +3,7 @@ declare global {
     interface Request {
       usuario?: {
         id: string;
-        perfil: string;
+        papel: string;
         status: string;
       };
     }
