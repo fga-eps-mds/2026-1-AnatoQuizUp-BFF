@@ -51,8 +51,8 @@ jobs:
           git config --global user.email "${{secrets.USER_EMAIL}}"
           git config --global user.name "${{secrets.USER_NAME}}"
           git clone --single-branch --branch main "https://x-access-token:${{secrets.DOC_PUSH_TOKEN}}@github.com/fga-eps-mds/2026-1-AnatoQuizUp-Doc.git" doc
-          mkdir -p doc/analytics-raw-data/Usuario-Service
-          cp -R analytics-raw-data/*.json doc/analytics-raw-data/Usuario-Service
+          mkdir -p doc/analytics-raw-data/BFF
+          cp -R analytics-raw-data/*.json doc/analytics-raw-data/BFF
           cd doc
           git add .
           git commit -m "Adicionando métricas do repositório ${{ github.event.repository.name }} ${{ github.ref_name }}" || echo "Sem alterações para commitar"
