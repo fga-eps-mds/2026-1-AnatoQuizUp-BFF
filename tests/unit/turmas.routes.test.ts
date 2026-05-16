@@ -1,5 +1,6 @@
 import request from 'supertest';
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
 
 jest.mock('@/shared/middlewares/autenticacao.middleware', () => ({
   middlewareAutenticacao: jest.fn((req: Request, res: Response, next: NextFunction) => {
@@ -9,7 +10,6 @@ jest.mock('@/shared/middlewares/autenticacao.middleware', () => ({
 
 jest.mock('@/shared/middlewares/proxy.middleware', () => ({
   criarProxyHandler: jest.fn(() => (req: Request, res: Response) => {
-    // Simula que o proxy pegou a requisição e mandou pro Quiz-Service com sucesso
     res.status(200).json({ mensagem: 'Passou pelo proxy!' });
   }),
 }));
@@ -20,8 +20,6 @@ jest.mock('@/shared/clients/quiz.client', () => ({
 
 import { turmasRouter } from '@/routes/turmas.routes'; 
 import { middlewareAutenticacao } from '@/shared/middlewares/autenticacao.middleware';
-import { criarProxyHandler } from '@/shared/middlewares/proxy.middleware';
-import { quizClient } from '@/shared/clients/quiz.client';
 
 describe('Turmas Router (BFF)', () => {
   let app: express.Express;
