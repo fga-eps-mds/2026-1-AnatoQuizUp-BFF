@@ -6,7 +6,7 @@
 
 - Validar o JWT (assinatura/expiração) antes de repassar.
 - Injetar `X-Internal-Token` (segredo compartilhado) e cabeçalhos auxiliares (`X-User-Id`, `X-User-Papel`, `X-User-Status`) nas chamadas downstream.
-- Rotear por path: `/api/v1/autenticacao/*`, `/api/v1/admin/*`, `/api/v1/exemplos/*` → Backend/Auth; `/api/v1/questoes/*` → Quiz-Service; `/api/v1/ia/*` → AI (placeholder enquanto AI estiver vazio).
+- Rotear por path: `/api/v1/autenticacao/*`, `/api/v1/admin/*`, `/api/v1/usuarios/*`, `/api/v1/exemplos/*` → Backend/Auth; `/api/v1/questoes/*`, `/api/v1/turmas/*` → Quiz-Service; `/api/v1/ia/*` → AI (placeholder enquanto AI estiver vazio).
 - Padronizar respostas de erro vindas do downstream.
 
 ## Stack
@@ -106,8 +106,10 @@ make clean       # apaga dist/ e coverage/
 | `GET /health` | próprio BFF |
 | `/api/v1/autenticacao/*` | Backend/Auth `/api/v1/autenticacao/*` |
 | `/api/v1/admin/usuarios*` | Backend/Auth `/api/v1/admin/usuarios*` (autenticado) |
+| `/api/v1/usuarios/*` | Backend/Auth `/api/v1/usuarios/*` (autenticado) |
 | `/api/v1/exemplos/*` | Backend/Auth `/api/v1/exemplos/*` (autenticado) |
 | `/api/v1/questoes/*` | Quiz-Service `/api/v1/questoes/*` (autenticado) |
+| `/api/v1/turmas/*` | Quiz-Service `/api/v1/turmas/*` (autenticado) |
 | `/api/v1/ia/*` | AI `/api/v1/*` — atualmente **503 `IA_INDISPONIVEL`** enquanto `AI_URL` estiver vazio |
 
 ### Rotas públicas de autenticação (sem JWT)
@@ -145,6 +147,8 @@ Qualquer outro path de autenticação exige `Authorization: Bearer <accessToken>
 │   │   ├── exemplos.routes.ts       # exige JWT, repassa Backend
 │   │   ├── ia.routes.ts             # exige JWT, repassa AI (ou 503 placeholder)
 │   │   ├── questoes.routes.ts       # exige JWT, repassa Quiz-Service
+│   │   ├── turmas.routes.ts         # exige JWT, repassa Quiz-Service
+│   │   ├── usuarios.routes.ts       # exige JWT, repassa Backend
 │   │   └── index.ts                 # monta o apiRouter
 │   ├── shared/
 │   │   ├── clients/
