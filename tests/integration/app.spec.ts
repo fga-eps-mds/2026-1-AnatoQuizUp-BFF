@@ -177,6 +177,35 @@ describe("/api/v1/admin", () => {
   });
 });
 
+describe("/api/v1/usuarios", () => {
+  it("rejeita sem token", async () => {
+    const resposta = await request(aplicacao).get("/api/v1/usuarios/alunos");
+
+    expect(resposta.status).toBe(401);
+    expect(backendMock.request).not.toHaveBeenCalled();
+  });
+
+  it("repassa chamadas autenticadas para o Backend", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: [] },
+      headers: {},
+    });
+
+    const resposta = await request(aplicacao)
+      .get("/api/v1/usuarios/alunos?busca=joao")
+      .set("Authorization", `Bearer ${tokenValido()}`);
+
+    expect(resposta.status).toBe(200);
+    expect(quizMock.request).not.toHaveBeenCalled();
+    const args = backendMock.request.mock.calls[0][0];
+    expect(args.method).toBe("GET");
+    expect(args.url).toBe("/api/v1/usuarios/alunos?busca=joao");
+    expect(args.headers["x-internal-token"]).toBeDefined();
+    expect(args.headers["x-user-id"]).toBe("u1");
+  });
+});
+
 describe("/api/v1/exemplos", () => {
   it("repassa POST autenticado", async () => {
     backendMock.request.mockResolvedValue({
