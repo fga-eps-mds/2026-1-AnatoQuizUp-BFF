@@ -8,6 +8,10 @@ import { questoesRouter } from "@/routes/questoes.routes";
 import { turmasRouter } from "@/routes/turmas.routes";
 import { usuariosRouter } from "@/routes/usuarios.routes";
 
+import { quizClient } from "@/shared/clients/quiz.client";
+import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
+import { middlewareAutenticacao } from "@/shared/middlewares/autenticacao.middleware";
+
 const apiRouter = Router();
 
 apiRouter.use("/autenticacao", authRouter);
@@ -17,5 +21,7 @@ apiRouter.use("/questoes", questoesRouter);
 apiRouter.use("/ia", iaRouter);
 apiRouter.use("/turmas", turmasRouter);
 apiRouter.use("/usuarios", usuariosRouter);
+
+apiRouter.use("/quiz", middlewareAutenticacao, criarProxyHandler(quizClient));
 
 export { apiRouter };
