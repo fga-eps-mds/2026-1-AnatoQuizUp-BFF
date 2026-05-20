@@ -221,6 +221,76 @@ describe("/api/v1/exemplos", () => {
   });
 });
 
+describe("/api/v1/turmas", () => {
+  it("rejeita sem token", async () => {
+    const resposta = await request(aplicacao).get("/api/v1/turmas");
+
+    expect(resposta.status).toBe(401);
+    expect(quizMock.request).not.toHaveBeenCalled();
+  });
+
+  it("repassa GET /turmas de aluno para o Quiz-Service injetando X-User-Papel=ALUNO", async () => {
+    quizMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: [] },
+      headers: {},
+    });
+
+    const resposta = await request(aplicacao)
+      .get("/api/v1/turmas")
+      .set("Authorization", `Bearer ${tokenValido()}`);
+
+    expect(resposta.status).toBe(200);
+    expect(backendMock.request).not.toHaveBeenCalled();
+    const args = quizMock.request.mock.calls[0][0];
+    expect(args.method).toBe("GET");
+    expect(args.url).toBe("/api/v1/turmas");
+    expect(args.headers["x-internal-token"]).toBeDefined();
+    expect(args.headers["x-user-id"]).toBe("u1");
+    expect(args.headers["x-user-papel"]).toBe("ALUNO");
+  });
+
+  it("repassa GET /turmas/:id para o Quiz-Service", async () => {
+    quizMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: { id: "turma-1" } },
+      headers: {},
+    });
+
+    const resposta = await request(aplicacao)
+      .get("/api/v1/turmas/turma-1")
+      .set("Authorization", `Bearer ${tokenValido()}`);
+
+    expect(resposta.status).toBe(200);
+    const args = quizMock.request.mock.calls[0][0];
+    expect(args.url).toBe("/api/v1/turmas/turma-1");
+    expect(args.headers["x-user-papel"]).toBe("ALUNO");
+  });
+});
+
+describe("/api/v1/usuarios/:id (busca publica)", () => {
+  it("repassa GET /usuarios/:id de aluno para o Backend injetando X-User-Papel=ALUNO", async () => {
+    backendMock.request.mockResolvedValue({
+      status: 200,
+      data: { mensagem: "ok", dados: { id: "prof-1", nome: "Maria", papel: "PROFESSOR" } },
+      headers: {},
+    });
+
+    const resposta = await request(aplicacao)
+      .get("/api/v1/usuarios/prof-1")
+      .set("Authorization", `Bearer ${tokenValido()}`);
+
+    expect(resposta.status).toBe(200);
+    expect(quizMock.request).not.toHaveBeenCalled();
+    const args = backendMock.request.mock.calls[0][0];
+    expect(args.method).toBe("GET");
+    expect(args.url).toBe("/api/v1/usuarios/prof-1");
+    expect(args.headers["x-internal-token"]).toBeDefined();
+    expect(args.headers["x-user-id"]).toBe("u1");
+    expect(args.headers["x-user-papel"]).toBe("ALUNO");
+  });
+});
+
 describe("/api/v1/questoes", () => {
   it("rejeita sem token", async () => {
     const resposta = await request(aplicacao).get("/api/v1/questoes");
