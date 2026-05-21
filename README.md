@@ -29,7 +29,7 @@
 | npm | que vem com o Node | — |
 | Git | qualquer recente | https://git-scm.com/ |
 | GNU Make | opcional, mas recomendado | Windows: `choco install make` ou `scoop install make`; Mac: `brew install make`; Linux: já vem |
-| Backend/Auth rodando em `localhost:3333` | — | siga o README do `2026-1-AnatoQuizUp-Backend` antes de subir o BFF |
+| Backend/Auth rodando em `localhost:3333` | — | siga o README do `2026-1-AnatoQuizUp-Usuario-Service` antes de subir o BFF |
 | Quiz-Service rodando em `localhost:3334` | — | necessário para fluxos de `/api/v1/questoes/*` |
 
 ## Setup local — passo a passo
