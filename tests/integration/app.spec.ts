@@ -227,6 +227,7 @@ describe("/api/v1/turmas", () => {
 
     expect(resposta.status).toBe(401);
     expect(quizMock.request).not.toHaveBeenCalled();
+    expect(backendMock.request).not.toHaveBeenCalled();
   });
 
   it("repassa GET /turmas de aluno para o Quiz-Service injetando X-User-Papel=ALUNO", async () => {
