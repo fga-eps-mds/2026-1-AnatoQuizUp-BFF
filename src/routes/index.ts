@@ -9,6 +9,7 @@ import { turmasRouter } from "@/routes/turmas.routes";
 import { usuariosRouter } from "@/routes/usuarios.routes";
 import { listasRouter } from "./lista.routes";
 import { turmaDashboardRouter } from "./dashboardTurma.routes";
+import { dashboardAlunoRouter } from "./dashboardAluno.routes";
 
 import { quizClient } from "@/shared/clients/quiz.client";
 import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
@@ -26,5 +27,6 @@ apiRouter.use("/usuarios", usuariosRouter);
 apiRouter.use("/quiz", middlewareAutenticacao, criarProxyHandler(quizClient));
 apiRouter.use("/lista", listasRouter);
 apiRouter.use("/turmasDashboard", turmaDashboardRouter);
+apiRouter.use("/dashboardAluno", dashboardAlunoRouter);
 
 export { apiRouter };
