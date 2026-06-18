@@ -27,7 +27,7 @@ apiRouter.use("/ia", iaRouter);
 apiRouter.use("/turmas", turmasRouter);
 apiRouter.use("/usuarios", usuariosRouter);
 apiRouter.use("/quiz", middlewareAutenticacao, criarProxyHandler(quizClient));
-apiRouter.use("/avatarLoja", middlewareAutenticacao, criarProxyHandler(quizClient));
+apiRouter.use("/loja", middlewareAutenticacao, criarProxyHandler(quizClient));
 apiRouter.use("/amizade",amizadeRouter);
 apiRouter.use("/lista", listasRouter);
 apiRouter.use("/listasAluno", listasAlunoRouter);
