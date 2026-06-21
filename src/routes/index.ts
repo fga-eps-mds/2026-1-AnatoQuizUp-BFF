@@ -10,7 +10,7 @@ import { usuariosRouter } from "@/routes/usuarios.routes";
 import { listasRouter } from "./lista.routes";
 import { turmaDashboardRouter } from "./dashboardTurma.routes";
 import { dashboardAlunoRouter } from "./dashboardAluno.routes";
-import { listasAlunoRouter } from "./listasAlunos.routes"
+import { listasAlunoRouter } from "./listasAlunos.routes";
 
 import { quizClient } from "@/shared/clients/quiz.client";
 import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
@@ -27,8 +27,10 @@ apiRouter.use("/ia", iaRouter);
 apiRouter.use("/turmas", turmasRouter);
 apiRouter.use("/usuarios", usuariosRouter);
 apiRouter.use("/quiz", middlewareAutenticacao, criarProxyHandler(quizClient));
-apiRouter.use("/avatarLoja", middlewareAutenticacao, criarProxyHandler(quizClient));
-apiRouter.use("/amizade",amizadeRouter);
+apiRouter.use("/loja", middlewareAutenticacao, criarProxyHandler(quizClient));
+apiRouter.use("/inventario", middlewareAutenticacao, criarProxyHandler(quizClient));
+apiRouter.use("/conquistas", middlewareAutenticacao, criarProxyHandler(quizClient));
+apiRouter.use("/amizade", amizadeRouter);
 apiRouter.use("/lista", listasRouter);
 apiRouter.use("/listasAluno", listasAlunoRouter);
 apiRouter.use("/turmasDashboard", turmaDashboardRouter);
