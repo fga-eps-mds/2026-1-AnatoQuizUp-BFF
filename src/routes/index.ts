@@ -16,6 +16,7 @@ import { quizClient } from "@/shared/clients/quiz.client";
 import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
 import { middlewareAutenticacao } from "@/shared/middlewares/autenticacao.middleware";
 import { amizadeRouter } from "./amizade.routes";
+import { inventarioRouter } from "./inventario.routes";
 
 const apiRouter = Router();
 
@@ -33,5 +34,6 @@ apiRouter.use("/lista", listasRouter);
 apiRouter.use("/listasAluno", listasAlunoRouter);
 apiRouter.use("/turmasDashboard", turmaDashboardRouter);
 apiRouter.use("/dashboardAluno", dashboardAlunoRouter);
+apiRouter.use("/inventario", inventarioRouter)
 
 export { apiRouter };
