@@ -19,6 +19,7 @@ import { amizadeRouter } from "./amizade.routes";
 import { perfilSocialRouter } from "@/modules/perfil-social/perfil-social.routes";
 import { CodigoDeErro } from "@/shared/errors/codigos-de-erro";
 import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
+import { inventarioRouter } from "./inventario.routes";
 
 const apiRouter = Router();
 
@@ -50,5 +51,6 @@ apiRouter.use("/lista", listasRouter);
 apiRouter.use("/listasAluno", listasAlunoRouter);
 apiRouter.use("/turmasDashboard", turmaDashboardRouter);
 apiRouter.use("/dashboardAluno", dashboardAlunoRouter);
+apiRouter.use("/inventario", inventarioRouter)
 
 export { apiRouter };
