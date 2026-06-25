@@ -20,6 +20,7 @@ import { perfilSocialRouter } from "@/modules/perfil-social/perfil-social.routes
 import { CodigoDeErro } from "@/shared/errors/codigos-de-erro";
 import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 import { inventarioRouter } from "./inventario.routes";
+import { rankingRouter } from "@/modules/ranking/ranking.routes";
 
 const apiRouter = Router();
 
@@ -47,6 +48,7 @@ apiRouter.use("/conquistas/usuarios/destaques", middlewareAutenticacao, bloquear
 apiRouter.use("/conquistas", middlewareAutenticacao, criarProxyHandler(quizClient));
 apiRouter.use("/perfis", perfilSocialRouter);
 apiRouter.use("/amizade", amizadeRouter);
+apiRouter.use("/ranking", rankingRouter);
 apiRouter.use("/lista", listasRouter);
 apiRouter.use("/listasAluno", listasAlunoRouter);
 apiRouter.use("/turmasDashboard", turmaDashboardRouter);
