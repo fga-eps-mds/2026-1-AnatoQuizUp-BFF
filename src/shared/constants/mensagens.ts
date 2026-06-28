@@ -1,3 +1,5 @@
+// Mensagens fixas reutilizadas nas respostas do BFF, centralizadas para manter o
+// texto consistente e facilitar ajustes em um unico lugar.
 export const MENSAGENS = {
   bffEmExecucao: "BFF do AnatoQuizUp em execucao.",
   erroInterno: "Ocorreu um erro interno inesperado.",
