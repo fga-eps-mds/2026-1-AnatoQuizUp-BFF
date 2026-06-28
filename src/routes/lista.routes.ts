@@ -5,6 +5,7 @@ import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
 
 const router = Router();
 
+// Rotas de listas de questoes: autenticadas e repassadas ao Quiz-Service.
 router.use(middlewareAutenticacao);
 
 router.all(/.*/, criarProxyHandler(quizClient));

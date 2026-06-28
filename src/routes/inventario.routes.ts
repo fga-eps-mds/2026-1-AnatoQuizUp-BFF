@@ -5,6 +5,7 @@ import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
 
 const router = Router();
 
+// Inventario de cosmeticos do usuario: autenticado e repassado ao Quiz-Service.
 router.use(middlewareAutenticacao);
 
 router.all(/.*/, criarProxyHandler(quizClient));

@@ -5,6 +5,7 @@ import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
 
 const router = Router();
 
+// Rotas de turmas: autenticadas e repassadas ao Quiz-Service (dono do dominio de turmas).
 router.use(middlewareAutenticacao);
 
 router.all(/.*/, criarProxyHandler(quizClient));

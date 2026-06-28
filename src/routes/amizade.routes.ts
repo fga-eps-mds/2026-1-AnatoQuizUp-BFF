@@ -8,7 +8,10 @@ import { perfilSocialController } from "@/modules/perfil-social/perfil-social.ro
 const router = Router();
 
 router.use(middlewareAutenticacao);
+// "/amigos/perfis" e tratada pelo BFF (combina amizades + dados sociais do Quiz);
+// precisa vir antes do proxy curinga para nao ser repassada ao Usuario-Service.
 router.get("/amigos/perfis", perfilSocialController.listarAmigos);
+// Demais rotas de amizade vao direto ao Usuario-Service.
 router.all(/.*/, criarProxyHandler(backendClient));
 
 export { router as amizadeRouter };
