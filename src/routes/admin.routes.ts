@@ -7,7 +7,7 @@ import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
 const router = Router();
 
 // Rotas de administracao: exigem autenticacao e fazem proxy direto ao Usuario-Service.
-// A autorizacao por papel (ADMIN) e checada la, nao aqui.
+// A autorizacao por papel (ADMIN) e checada la, nao aqui
 router.use(middlewareAutenticacao);
 router.all(/.*/, criarProxyHandler(backendClient));
 
