@@ -1,5 +1,9 @@
 import type { MetadadosPaginacao } from "@/shared/types/api.types";
 
+// Tipos do perfil social: combinam amizades (Usuario-Service) com cosmeticos e
+// conquistas (Quiz-Service) para montar a visao social de cada usuario.
+
+// Identidade do usuario logado, resolvida pelo middleware de autenticacao.
 export type UsuarioRequisicao = {
   id: string;
   papel: string;
@@ -20,6 +24,7 @@ export type ResumoAmizade = {
   amigo: ResumoAmigo;
 };
 
+// Lista paginada de amizades retornada pelo Usuario-Service.
 export type RespostaAmizades = {
   dados: ResumoAmizade[];
   metadados: MetadadosPaginacao;
@@ -36,6 +41,7 @@ export type ItemCosmetico = {
   previewImagemUrl: string | null;
 };
 
+// Conquista que o usuario escolheu destacar no perfil (tier = raridade/nivel).
 export type ConquistaDestaque = {
   desbloqueioId: string;
   conquistaId: string;
@@ -50,17 +56,20 @@ export type ConquistaDestaque = {
   conquistadoEm: string;
 };
 
+// Dados sociais do Quiz agrupados por usuarioId (cosmeticos e conquistas em destaque).
 export type DadosSociaisQuiz = {
   cosmeticos: Record<string, ItemCosmetico[]>;
   destaques: Record<string, ConquistaDestaque[]>;
 };
 
+// Perfil social completo de um unico usuario (resposta do endpoint de perfil).
 export type PerfilSocial = {
   usuario: ResumoAmigo;
   cosmeticos: ItemCosmetico[];
   conquistasDestacadas: ConquistaDestaque[];
 };
 
+// Amizade ja enriquecida com os dados sociais, usada na listagem de amigos.
 export type ResumoAmigoSocial = ResumoAmizade & {
   cosmeticos: ItemCosmetico[];
   conquistasDestacadas: ConquistaDestaque[];
