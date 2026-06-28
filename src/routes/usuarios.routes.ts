@@ -6,6 +6,7 @@ import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
 
 const router = Router();
 
+// Rotas de usuarios: autenticadas e repassadas ao Usuario-Service (perfil, listagens etc.).
 router.use(middlewareAutenticacao);
 router.all(/.*/, criarProxyHandler(backendClient));
 

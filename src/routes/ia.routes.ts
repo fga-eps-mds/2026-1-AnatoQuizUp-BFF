@@ -12,6 +12,8 @@ const router = Router();
 router.use(middlewareAutenticacao);
 
 router.all(/.*/, (request, response, next) => {
+  // O servico de IA ainda nao foi habilitado nesta release: sem client configurado,
+  // qualquer chamada responde 503 em vez de quebrar.
   if (!aiClient) {
     return next(
       new ErroAplicacao({
@@ -21,6 +23,8 @@ router.all(/.*/, (request, response, next) => {
       }),
     );
   }
+  // Quando habilitado, faz proxy removendo o prefixo /ia da URL (o servico de IA
+  // espera as rotas sob /api/v1 direto, sem o segmento de roteamento do BFF).
   return criarProxyHandler(aiClient, {
     montarUrl: (requisicao) => requisicao.originalUrl.replace(/^\/api\/v1\/ia(?=\/|$)/, "/api/v1"),
   })(request, response, next);

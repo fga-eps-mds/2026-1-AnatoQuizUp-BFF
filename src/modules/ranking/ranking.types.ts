@@ -1,9 +1,14 @@
+// Tipos do modulo de ranking: contratos do usuario autenticado, das respostas
+// dos servicos internos (Usuario e Quiz) e do formato final devolvido pelo BFF.
+
+// Identidade do usuario ja resolvida pelo middleware de autenticacao.
 export type UsuarioRequisicao = {
   id: string;
   papel: string;
   status: string;
 };
 
+// Envelope padrao de sucesso da API; "dados" carrega o payload util.
 export type RespostaApiSucesso<T> = {
   mensagem?: string;
   dados: T;
@@ -11,6 +16,7 @@ export type RespostaApiSucesso<T> = {
 
 // ---- Dados vindos do Usuario-Service ----
 
+// "visivel" indica se o aluno aceita aparecer para outros (privacidade do ranking).
 export type ResumoAmigo = {
   id: string;
   nome: string;
@@ -20,6 +26,7 @@ export type ResumoAmigo = {
   visivel?: boolean;
 };
 
+// Cosmetico equipado (avatar, moldura etc.) exibido junto da linha do ranking.
 export type ItemCosmetico = {
   id: string;
   codigo: string;
@@ -31,17 +38,20 @@ export type ItemCosmetico = {
   previewImagemUrl: string | null;
 };
 
+// "statusAmizade" distingue convites pendentes de amizades ATIVAS.
 export type ResumoAmizade = {
   id: string;
   statusAmizade: string;
   amigo: ResumoAmigo;
 };
 
+// Lista paginada de amizades; metadados.totalPages guia a varredura por paginas.
 export type RespostaAmizades = {
   dados: ResumoAmizade[];
   metadados: { totalPages: number };
 };
 
+// Aluno elegivel ao ranking geral (ja filtrado por visibilidade no Usuario-Service).
 export type AlunoVisivel = {
   id: string;
   nome: string;
@@ -50,6 +60,7 @@ export type AlunoVisivel = {
   semestre: string | null;
 };
 
+// Versao enxuta usada so para resolver nome/nickname a partir do id.
 export type ResumoUsuario = {
   id: string;
   nome: string;
@@ -64,6 +75,7 @@ export type UsuarioPublico = {
 
 // ---- Dados vindos do Quiz-Service ----
 
+// Pontuacao agregada por usuario; ultimaAtividade serve de criterio de desempate.
 export type PontuacaoUsuario = {
   usuarioId: string;
   totalAcertos: number;
@@ -71,6 +83,7 @@ export type PontuacaoUsuario = {
   ultimaAtividade: string | null;
 };
 
+// Desempenho por aluno na turma, ja calculado pelo Quiz (so falta resolver nomes).
 export type DesempenhoIndividualQuiz = {
   alunos: Array<{
     alunoId: string;
@@ -81,8 +94,10 @@ export type DesempenhoIndividualQuiz = {
   }>;
 };
 
+// Situacao do aluno em relacao a uma lista (entregou, em andamento ou nem comecou).
 export type StatusListaAluno = 'SUBMETIDA' | 'EM_ANDAMENTO' | 'NAO_RESPONDEU';
 
+// Desempenho dos alunos em uma lista especifica, vindo do dashboard do Quiz.
 export type DesempenhoListaQuiz = {
   listaTurmaId: string;
   nomeLista: string;
@@ -99,6 +114,7 @@ export type DesempenhoListaQuiz = {
 
 // ---- Respostas do BFF (ranking) ----
 
+// Linha final do ranking geral/amigos, ja com posicao calculada e flag do "Voce".
 export type EntradaRanking = {
   posicao: number;
   usuarioId: string;
@@ -113,12 +129,14 @@ export type EntradaRanking = {
   cosmeticos: ItemCosmetico[];
 };
 
+// Resposta dos rankings de aluno: o top N + a linha do proprio usuario a parte.
 export type RankingAlunoResposta = {
   dados: EntradaRanking[];
   usuarioAtual: EntradaRanking | null;
   totalParticipantes: number;
 };
 
+// Linha do ranking de turma (nao tem flag de "Voce", e visao do professor).
 export type EntradaRankingTurma = {
   posicao: number;
   alunoId: string;
@@ -136,6 +154,7 @@ export type RankingTurmaResposta = {
   dados: EntradaRankingTurma[];
 };
 
+// Linha do ranking de uma lista: inclui status e horario de submissao do aluno.
 export type EntradaRankingLista = {
   posicao: number;
   alunoId: string;
@@ -148,6 +167,7 @@ export type EntradaRankingLista = {
   cosmeticos: ItemCosmetico[];
 };
 
+// Resposta do ranking de lista: cabecalho da lista + as linhas dos alunos.
 export type RankingListaResposta = {
   turmaId: string;
   listaTurmaId: string;

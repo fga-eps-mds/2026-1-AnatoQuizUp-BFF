@@ -22,8 +22,12 @@ import { ErroAplicacao } from "@/shared/errors/erro-aplicacao";
 import { inventarioRouter } from "./inventario.routes";
 import { rankingRouter } from "@/modules/ranking/ranking.routes";
 
+// Roteador raiz da API: agrega todos os sub-routers e define a estrategia de cada
+// prefixo (router proprio com logica ou proxy direto ao servico de destino).
 const apiRouter = Router();
 
+// Algumas sub-rotas de servicos internos nao devem ser expostas pelo BFF (sao de uso
+// interno entre servicos). Este handler as trata como inexistentes, devolvendo 404.
 const bloquearRotaInterna = (_request: Request, _response: Response, next: NextFunction) =>
   next(
     new ErroAplicacao({
@@ -33,6 +37,9 @@ const bloquearRotaInterna = (_request: Request, _response: Response, next: NextF
     }),
   );
 
+// Mapa de roteamento do BFF: cada prefixo aponta para um router proprio ou faz proxy
+// direto ao servico de destino. As rotas com router proprio cuidam da sua autenticacao;
+// as de proxy direto exigem o middlewareAutenticacao explicitamente aqui.
 apiRouter.use("/autenticacao", authRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/exemplos", exemplosRouter);
@@ -42,6 +49,8 @@ apiRouter.use("/turmas", turmasRouter);
 apiRouter.use("/usuarios", usuariosRouter);
 apiRouter.use("/quiz", middlewareAutenticacao, criarProxyHandler(quizClient));
 apiRouter.use("/loja", middlewareAutenticacao, criarProxyHandler(quizClient));
+// As rotas ".../equipados" e ".../destaques" sao consumidas internamente (ranking e
+// perfil social); ficam bloqueadas para acesso publico direto, antes do proxy geral.
 apiRouter.use("/inventario/usuarios/equipados", middlewareAutenticacao, bloquearRotaInterna);
 apiRouter.use("/inventario", middlewareAutenticacao, criarProxyHandler(quizClient));
 apiRouter.use("/conquistas/usuarios/destaques", middlewareAutenticacao, bloquearRotaInterna);

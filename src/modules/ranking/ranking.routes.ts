@@ -5,11 +5,14 @@ import { middlewareAutenticacao } from "@/shared/middlewares/autenticacao.middle
 import { RankingController } from "./ranking.controller";
 import { RankingService } from "./ranking.service";
 
+// Monta a cadeia do modulo de ranking: instancia o service, injeta no controller e
+// liga cada endpoint ao seu handler. O modulo inteiro exige usuario autenticado.
 const rankingService = new RankingService();
 const rankingController = new RankingController(rankingService);
 
 const rankingRouter = Router();
 
+// Autenticacao aplicada a todas as rotas de ranking abaixo.
 rankingRouter.use(middlewareAutenticacao);
 
 // Aluno (e professor/admin): ranking geral de todos os alunos visiveis.

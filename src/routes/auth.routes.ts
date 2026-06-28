@@ -4,6 +4,8 @@ import { backendClient } from "@/shared/clients/backend.client";
 import { middlewareAutenticacao } from "@/shared/middlewares/autenticacao.middleware";
 import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
 
+// Rotas de autenticacao acessiveis sem login (login, cadastro, recuperacao de senha e
+// consultas de apoio ao formulario). As demais exigem token valido.
 const ROTAS_PUBLICAS = [
   "/login",
   "/atualizar-token",
@@ -20,6 +22,8 @@ const ROTAS_PUBLICAS = [
 const router = Router();
 const proxy = criarProxyHandler(backendClient);
 
+// Autenticacao seletiva: libera as rotas publicas (e suas subrotas) e exige token
+// no restante antes de repassar ao Usuario-Service.
 router.use((request, response, next) => {
   const ehPublica = ROTAS_PUBLICAS.some(
     (publica) => request.path === publica || request.path.startsWith(`${publica}/`),

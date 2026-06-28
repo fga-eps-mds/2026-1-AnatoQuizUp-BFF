@@ -5,6 +5,7 @@ import { criarProxyHandler } from "@/shared/middlewares/proxy.middleware";
 
 const router = Router();
 
+// Dashboard de desempenho da turma (visao do professor): proxy ao Quiz-Service.
 router.use(middlewareAutenticacao);
 
 router.all(/.*/, criarProxyHandler(quizClient));
